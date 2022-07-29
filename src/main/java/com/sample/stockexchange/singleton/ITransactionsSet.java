@@ -1,8 +1,8 @@
-package com.sample.stockexchange.adapter;
+package com.sample.stockexchange.singleton;
 
 import java.util.List;
 
-import com.sample.stockexchange.entity.OrderEntry;
+import com.sample.stockexchange.entity.TradeEntry;
 
 /**
  * Interface for persisting order book containing executed orders. For
@@ -10,5 +10,5 @@ import com.sample.stockexchange.entity.OrderEntry;
  * 
  */
 public interface ITransactionStore {
-    public List<OrderEntry> getOrderEntries();
+    public List<TradeEntry> getOrderEntries();
 }

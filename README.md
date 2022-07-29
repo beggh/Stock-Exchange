@@ -74,3 +74,4 @@ Should produce the following output to the console: (format:<sell-order-id> <qty
 2. To create a zip file of the source code, run `gradle assemble`. Source zip folder will be found at `build/distributions/StockExchangeApp-src.zip`
 3. To run tests, type `gradle test`
 
+# stock

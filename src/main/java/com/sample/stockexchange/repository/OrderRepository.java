@@ -1,14 +1,16 @@
-package com.sample.stockexchange.usecase;
+package com.sample.stockexchange.service;
 
 import static com.sample.stockexchange.entity.OrderType.BUY;
 import static com.sample.stockexchange.entity.OrderType.SELL;
 
+import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import com.sample.stockexchange.adapter.IOrderSetStore;
-import com.sample.stockexchange.adapter.ITransactionStore;
+import com.sample.stockexchange.exception.customException;
+import com.sample.stockexchange.singleton.IOrderSetStore;
+import com.sample.stockexchange.singleton.ITransactionStore;
 import com.sample.stockexchange.entity.BuyOrderSet;
 import com.sample.stockexchange.entity.Order;
 import com.sample.stockexchange.entity.OrderEntry;
@@ -27,14 +29,7 @@ public final class OrderUsecasesRepo {
         this.transactionList = transactionStore.getOrderEntries();
     }
 
-    /**
-     * Adds orders to {@link com.sample.stockexchange.entity.BuyOrderSet}. If
-     * Order.id is not unique, AddOrderException is thrown.
-     *
-     * @param orders
-     * @throws AddOrderException
-     */
-    public void addOrders(List<Order> orders) throws AddOrderException {
+    public void addOrders(List<Order> orders) throws customException, IOException {
         if (orders == null || orders.isEmpty()) {
             return;
         }
@@ -45,7 +40,7 @@ public final class OrderUsecasesRepo {
             }
 
             if (order.getStock() == null) {
-                throw new AddOrderException("No stocks attached to Order: " + order.getId());
+                throw new IOException("No stocks attached to Order: " + order.getId());
             }
 
             Set<Order> orderSet = null;
@@ -66,33 +61,28 @@ public final class OrderUsecasesRepo {
             }
 
             if (orderSet.contains(order)) {
-                throw new AddOrderException("Order is possibly duplicated: " + order.getId());
+                throw new customException("Order is possibly duplicated: " + order.getId());
             } else {
                 orderSet.add(order);
             }
         }
     }
 
-    /**
-     * Cleans in-memory data-stores. Useful for testing.
-     */
     public void cleanup() {
         buys.clear();
         sells.clear();
         transactionList.clear();
     }
 
-    /**
-     * Processs(executes) in-memory
-     * {@link com.sample.stockexchange.entity.BuyOrderSet} based on FIFO(time)
-     * price-matching policy
-     * 
-     * @return {@link ITransactionStore}. Returns existing transaction store if no
-     *         orders were processed
-     */
-    public List<OrderEntry> processOrders() {
+
+    public List<OrderEntry> processOrders() throws IOException {
         if (buys == null || buys.isEmpty() || sells == null || sells.isEmpty()) {
-            return transactionList;
+            //return transactionList;
+            if(!transactionList.isEmpty()){
+                return transactionList;
+            }
+            else throw new IOException("Invalid Input provided");
+
         }
 
         // process buy orders
@@ -112,7 +102,7 @@ public final class OrderUsecasesRepo {
 
             buyOrderSet.stream().filter(order -> (order.getQuantity() > 0)).forEach((buy) -> {
                 for (Order sell : sellOrderSet) {
-                    if (sell.getQuantity() > 0 && buy.getAskingPrice().compareTo(sell.getAskingPrice()) >= 0) {
+                    if (sell.getQuantity() > 0 && buy.getAskingPrice().compareTo(sell.getAskingPrice()) >= 0) {   // execution logic
 
                         int qty = 0;
                         if (sell.getQuantity() > buy.getQuantity()) {
@@ -126,7 +116,7 @@ public final class OrderUsecasesRepo {
                         }
 
                         // record it in order entry
-                        OrderEntry entry = new OrderEntry(sell, buy, qty, sell.getAskingPrice());
+                        OrderEntry entry = new OrderEntry(buy, sell.getAskingPrice(), qty, sell);
                         transactionList.add(entry);
                     }
                 }

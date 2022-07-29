@@ -3,9 +3,6 @@ package com.sample.stockexchange.entity;
 import java.math.BigDecimal;
 import java.util.UUID;
 
-/**
- * OrderEntry contains a executed list of valid pairs of {@link Order}
- */
 public class OrderEntry {
     private final UUID id;
     private final Order party;
@@ -13,12 +10,12 @@ public class OrderEntry {
     private final int quantity;
     private final BigDecimal executionPrice;
 
-    public OrderEntry(Order party, Order counterParty, int quantity, BigDecimal executionPrice) {
+    public OrderEntry(Order party,  BigDecimal executionPrice, int quantity, Order counterParty) {
         this.id = UUID.randomUUID();
         this.party = party;
-        this.counterParty = counterParty;
-        this.quantity = quantity;
         this.executionPrice = executionPrice;
+        this.quantity = quantity;
+        this.counterParty = counterParty;
     }
 
     public UUID getId() {

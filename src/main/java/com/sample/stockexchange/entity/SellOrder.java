@@ -28,11 +28,8 @@ final class SellOrderComparator implements Comparator<Order> {
             return 0; // invalid orders
         }
 
-        int priceCompare = a.getAskingPrice().compareTo(b.getAskingPrice());
-        if (priceCompare == 0) {
-            // A tie on price, check time
-            return a.getTime().compareTo(b.getTime());
-        }
-        return priceCompare;
+        int timeCompare = a.getTime().compareTo(b.getTime());  // sorting based on time instead of price
+
+        return timeCompare;
     }
 }
